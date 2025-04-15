@@ -81,32 +81,43 @@ function pushToGitHub() {
     const GIT_REPO_URL = `https://${GIT_USER}:${GH_TOKEN}@github.com/${GIT_USER}/${GIT_REPO}.git`;
   
     try {
-      if (!fs.existsSync(DB_FILE)) {
-        console.log("DB file not found, skipping Git push.");
-        return;
-      }
+        // بررسی وجود فایل DB
+        if (!fs.existsSync(DB_FILE)) {
+            console.log("DB file not found, skipping Git push.");
+            return;
+        }
   
-      if (!fs.existsSync(".git")) {
-        console.log("Git directory not found. Initializing Git repository...");
-        execSync("git init");
-        execSync("git branch -m main");
-        execSync(`git remote add origin ${GIT_REPO_URL}`);
-      }
+        // بررسی وجود پوشه git
+        if (!fs.existsSync(".git")) {
+            console.log("Git directory not found. Initializing Git repository...");
+            execSync("git init");
+            execSync("git branch -m main");  // تغییر نام branch به main
+            execSync(`git remote add origin ${GIT_REPO_URL}`);  // اضافه کردن remote
+        } else {
+            console.log("Git directory found. Syncing with remote...");
+            // هماهنگ‌سازی با ریموت (pull کردن تغییرات ریموت)
+            execSync("git fetch origin main");
+            execSync("git reset --soft origin/main");  // استفاده از reset نرم برای همگام‌سازی
+        }
   
-      execSync("git config user.name 'Jaberkh'");
-      execSync("git config user.email 'khodadadi.jaber@live.com'");
+        // تنظیمات گیت
+        execSync("git config user.name 'Jaberkh'");
+        execSync("git config user.email 'khodadadi.jaber@live.com'");
   
-      execSync("git add -f dune_data.db");
-execSync(`git commit -m 'update dune_data.db' -- dune_data.db || true`);
-execSync("git push origin HEAD:main");
-
-
+        // اضافه کردن فایل DB به staging area
+        execSync("git add -f dune_data.db");  // -f برای اطمینان از اضافه کردن فایل حتی اگر .gitignore باشد
   
-      console.log("✅ Git push done.");
+        // انجام commit (با پیامی شامل تاریخ و زمان)
+        execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);  // || true برای جلوگیری از ارور در صورت عدم تغییر
+  
+        // push به ریموت
+        execSync("git push origin main");  // push به branch اصلی (main)
+  
+        console.log("✅ Git push done.");
     } catch (err) {
-      console.error("❌ Git push error:", err);
+        console.error("❌ Git push error:", err);
     }
-  }
+}
   
   
 
