@@ -93,24 +93,24 @@ function pushToGitHub() {
             execSync(`git remote add origin ${GIT_REPO_URL}`);
         }
 
-        const untrackedFiles = execSync('git ls-files --others --exclude-standard').toString().split('\n').filter(file => file);
-        if (untrackedFiles.length > 0) {
-            console.log("Untracked files found. Adding to git...");
-            execSync('git add .');
-        }
+        // حذف همه فایل‌ها از staging area به جز dune_data.db
+        execSync('git reset');  // این دستور همه تغییرات staging شده را باز می‌گرداند (لغو می‌کند)
+        execSync('git rm --cached .');  // این دستور همه فایل‌ها را از staging حذف می‌کند، اما در سیستم فایل باقی می‌مانند
 
+        // فقط فایل dune_data.db را به staging اضافه کنید
+        execSync('git add -f dune_data.db');  // فقط فایل dune_data.db را اضافه کنید
+
+        // کامیت تغییرات مربوط به dune_data.db
+        console.log("Committing dune_data.db...");
+        execSync("git commit -m 'update dune_data.db'");
+
+        // همگام‌سازی با ریموت و پوش کردن تغییرات
         console.log("Syncing with remote repository...");
         execSync("git fetch origin");
-        execSync("git checkout main");  // اطمینان از اینکه در شاخه main هستید
-        execSync("git pull origin main --rebase");
+        execSync("git checkout main");  // سوئیچ به شاخه اصلی
+        execSync("git pull origin main --rebase");  // همگام‌سازی با ریموت
 
-        execSync("git rm --cached dune_data.db");
-        console.log("File dune_data.db removed from git staging.");
-
-        execSync("git add -f dune_data.db");
-
-        execSync(`git commit -m 'update dune_data.db' || true`);
-        execSync("git push origin main");
+        execSync("git push origin main");  // پوش تغییرات به ریموت
 
         console.log("✅ Git push done.");
     } catch (err) {
