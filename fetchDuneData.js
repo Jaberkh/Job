@@ -1,4 +1,4 @@
-import Database from '@jlongster/sqlite';
+import Database from 'better-sqlite3';
 import fetch from 'node-fetch';
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -9,9 +9,7 @@ dotenv.config();
 const DB_FILE = 'dune_data.db';
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
 
-async function fetchAndSaveData() {
-  const db = new Database(DB_FILE);
-
+function createTableIfNotExists(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS peanut_data (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +23,12 @@ async function fetchAndSaveData() {
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+}
+
+async function fetchAndSaveData() {
+  const db = new Database(DB_FILE);
+  
+  createTableIfNotExists(db);
 
   try {
     const response = await fetch(`https://api.dune.com/api/v1/query/4837362/results?api_key=${DUNE_API_KEY}`);
