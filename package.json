@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node fetchDuneData.js"
+    "start": "node fetchDuneData.js",
+    "postinstall": "npm rebuild sqlite3"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",

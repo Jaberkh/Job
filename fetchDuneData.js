@@ -79,7 +79,13 @@ function pushToGitHub() {
 }
 
 (async () => {
-    await fetchAndSaveData();
-    pushToGitHub();
-    db.close();
-})();
+    try {
+      await fetchAndSaveData();
+      pushToGitHub();
+    } catch (err) {
+      console.error("Fatal error in cron:", err);
+    } finally {
+      db.close?.();
+    }
+  })();
+  
