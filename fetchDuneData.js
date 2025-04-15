@@ -32,7 +32,7 @@ async function fetchAndSaveData() {
   createTableIfNotExists(db);
 
   try {
-    const response = await fetch(`https://api.dune.com/api/v1/query/4837362/results?api_key=${DUNE_API_KEY}`);
+    const response = await fetch(`https://api.dune.com/api/v1/query/4988636/results?api_key=${DUNE_API_KEY}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const jsonData = await response.json();
