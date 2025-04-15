@@ -95,5 +95,7 @@ function pushToGitHub() {
     pushToGitHub();
   } catch (err) {
     console.error("Fatal cron error:", err);
+    console.log("Current working directory:", process.cwd());
+
   }
 })();
