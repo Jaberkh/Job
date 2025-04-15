@@ -29,4 +29,4 @@ function pushToGitHub() {
       console.error("❌ Git push error:", err);
     }
   }
-  
+  pushToGitHub();
