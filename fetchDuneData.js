@@ -97,8 +97,10 @@ function pushToGitHub() {
       execSync("git config user.email 'khodadadi.jaber@live.com'");
   
       execSync("git add -f dune_data.db");
-      execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
-      execSync("git push -u origin main");
+execSync(`git commit -m 'update dune_data.db' -- dune_data.db || true`);
+execSync("git push origin HEAD:main");
+
+
   
       console.log("✅ Git push done.");
     } catch (err) {
