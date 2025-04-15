@@ -103,7 +103,7 @@ function pushToGitHub() {
       execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
       
       // ارسال به مخزن GitHub
-      execSync("git push origin main");
+      execSync("git push origin master");
   
       console.log("Git push done.");
     } catch (err) {
