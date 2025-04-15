@@ -9,7 +9,6 @@ dotenv.config();
 
 const DB_FILE = 'dune_data.db';
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
-const GIT_REPO_DIR = '/app'; // مسیر پیش‌فرض برای پروژه‌های Railway یا پروژه‌های مبتنی بر Docker ممکن است متفاوت باشد.
 
 function createTableIfNotExists(db) {
   db.exec(`
@@ -29,6 +28,7 @@ function createTableIfNotExists(db) {
 
 async function fetchAndSaveData() {
   const db = new Database(DB_FILE);
+
   createTableIfNotExists(db);
 
   try {
@@ -76,35 +76,29 @@ async function fetchAndSaveData() {
 
 function pushToGitHub() {
   try {
-    // بررسی اینکه آیا فایل دیتابیس وجود دارد
     if (!fs.existsSync(DB_FILE)) return;
 
-    // تغییر به دایرکتوری مخزن Git
-    const gitRepoDir = path.resolve(GIT_REPO_DIR);
+    // دایرکتوری مخزن Git
+    const gitRepoDir = path.resolve('.'); // فرض می‌کنیم در دایرکتوری مخزن هستیم
     process.chdir(gitRepoDir);
 
     // بررسی وضعیت Git
     try {
       execSync('git status', { stdio: 'ignore' });
     } catch (err) {
-      // اگر مخزن Git وجود ندارد، دستور git init را اجرا کنید
+      // اگر Git در دایرکتوری نیست، آن را اینیشیالایز می‌کنیم
       console.log('Git directory not found. Initializing Git repository...');
       execSync('git init');
     }
 
-    // بررسی اینکه آیا فایل .git در دایرکتوری وجود دارد
-    if (!fs.existsSync(path.join(gitRepoDir, '.git'))) {
-      throw new Error('Git is not initialized in this directory.');
-    }
-
-    // پیکربندی اطلاعات کاربری Git
+    // پیکربندی کاربری Git
     execSync("git config user.name 'railway-bot'");
     execSync("git config user.email 'railway@users.noreply.github.com'");
 
-    // افزودن فایل دیتابیس به استیج
-    execSync("git add dune_data.db");
+    // افزودن فایل به Git با گزینه -f
+    execSync("git add -f dune_data.db");
 
-    // انجام commit و push
+    // commit کردن تغییرات و push به GitHub
     execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
     execSync("git push");
 
@@ -117,9 +111,8 @@ function pushToGitHub() {
 (async () => {
   try {
     await fetchAndSaveData();
-    await pushToGitHub();
+    pushToGitHub();
   } catch (err) {
     console.error("Fatal cron error:", err);
-    console.log("Current working directory:", process.cwd());
   }
 })();
