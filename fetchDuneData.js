@@ -77,16 +77,16 @@ async function fetchAndSaveData() {
 function pushToGitHub() {
     const GIT_USER = 'Jaberkh';
     const GIT_REPO = 'Job';
-    const GH_TOKEN = process.env.GH_TOKEN;
+    const GH_TOKEN = process.env.GH_TOKEN;  // توکن از متغیر محیطی گرفته می‌شود
     const GIT_REPO_URL = `https://${GIT_USER}:${GH_TOKEN}@github.com/${GIT_USER}/${GIT_REPO}.git`;
-  
+
     try {
         // بررسی وجود فایل DB
         if (!fs.existsSync(DB_FILE)) {
             console.log("DB file not found, skipping Git push.");
             return;
         }
-  
+
         // بررسی وجود پوشه git
         if (!fs.existsSync(".git")) {
             console.log("Git directory not found. Initializing Git repository...");
@@ -99,20 +99,20 @@ function pushToGitHub() {
             execSync("git fetch origin main");
             execSync("git pull origin main --rebase");  // همگام‌سازی و جلوگیری از ایجاد تاریخچه پیچیده
         }
-  
+
         // تنظیمات گیت
         execSync("git config user.name 'Jaberkh'");
         execSync("git config user.email 'khodadadi.jaber@live.com'");
-  
+
         // اضافه کردن فایل DB به staging area
         execSync("git add -f dune_data.db");  // -f برای اطمینان از اضافه کردن فایل حتی اگر .gitignore باشد
-  
+
         // انجام commit (با پیامی شامل تاریخ و زمان)
         execSync(`git commit -m 'update dune_data.db' || true`);  // || true برای جلوگیری از ارور در صورت عدم تغییر
-  
+
         // push به ریموت
         execSync("git push origin main");  // push به branch اصلی (main)
-  
+
         console.log("✅ Git push done.");
     } catch (err) {
         console.error("❌ Git push error:", err);
