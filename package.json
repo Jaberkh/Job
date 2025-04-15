@@ -6,7 +6,7 @@
     "start": "node fetchDuneData.js"
   },
   "dependencies": {
-    "node-fetch": "^3.3.2",
-    "sqlite3": "^5.1.6"
+    "better-sqlite3": "^11.9.1",
+    "node-fetch": "^3.3.2"
   }
 }

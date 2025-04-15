@@ -1,15 +1,12 @@
 // index.js
 import fetch from "node-fetch";
-import sqlite3 from "sqlite3";
+import Database from 'better-sqlite3';
 import { execSync } from "child_process";
 import fs from "fs";
 
 const DB_FILE = "dune_data.db";
 
-const db = new sqlite3.Database(DB_FILE, (err) => {
-    if (err) console.error("DB connect error:", err);
-    else console.log("DB connected.");
-});
+const db = new Database(DB_FILE);
 
 db.run(
     `CREATE TABLE IF NOT EXISTS peanut_data (
