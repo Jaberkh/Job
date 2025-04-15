@@ -3,11 +3,13 @@ import fetch from 'node-fetch';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config();
 
 const DB_FILE = 'dune_data.db';
 const DUNE_API_KEY = process.env.DUNE_API_KEY;
+const GIT_REPO_DIR = '/app'; // مسیر پیش‌فرض برای پروژه‌های Railway یا پروژه‌های مبتنی بر Docker ممکن است متفاوت باشد.
 
 function createTableIfNotExists(db) {
   db.exec(`
@@ -27,7 +29,6 @@ function createTableIfNotExists(db) {
 
 async function fetchAndSaveData() {
   const db = new Database(DB_FILE);
-  
   createTableIfNotExists(db);
 
   try {
@@ -75,11 +76,28 @@ async function fetchAndSaveData() {
 
 function pushToGitHub() {
   try {
+    // بررسی اینکه آیا فایل دیتابیس وجود دارد
     if (!fs.existsSync(DB_FILE)) return;
 
+    // تغییر به دایرکتوری مخزن Git
+    const gitRepoDir = path.resolve(GIT_REPO_DIR);
+    process.chdir(gitRepoDir);
+
+    // بررسی وضعیت Git
+    try {
+      execSync('git status', { stdio: 'ignore' });
+    } catch (err) {
+      throw new Error('Not in a Git directory or Git is not initialized');
+    }
+
+    // پیکربندی اطلاعات کاربری Git
     execSync("git config user.name 'railway-bot'");
     execSync("git config user.email 'railway@users.noreply.github.com'");
+
+    // افزودن فایل دیتابیس به استیج
     execSync("git add dune_data.db");
+
+    // انجام commit و push
     execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
     execSync("git push");
 
@@ -92,10 +110,9 @@ function pushToGitHub() {
 (async () => {
   try {
     await fetchAndSaveData();
-    pushToGitHub();
+    await pushToGitHub();
   } catch (err) {
     console.error("Fatal cron error:", err);
     console.log("Current working directory:", process.cwd());
-
   }
 })();
