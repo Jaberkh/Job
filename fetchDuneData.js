@@ -75,41 +75,35 @@ async function fetchAndSaveData() {
 }
 
 function pushToGitHub() {
+    const GIT_REPO_URL = "https://github.com/Jaberkh/Job.git";
+  
     try {
-      // بررسی اینکه فایل DB وجود دارد
-      if (!fs.existsSync(DB_FILE)) return;
-  
-      // دایرکتوری مخزن Git
-      const gitRepoDir = path.resolve('.'); // فرض می‌کنیم در دایرکتوری مخزن هستیم
-      process.chdir(gitRepoDir);
-  
-      // بررسی وضعیت Git
-      try {
-        execSync('git status', { stdio: 'ignore' });
-      } catch (err) {
-        // اگر Git در دایرکتوری نیست، آن را اینیشیالایز می‌کنیم
-        console.log('Git directory not found. Initializing Git repository...');
-        execSync('git init');
+      if (!fs.existsSync(DB_FILE)) {
+        console.log("DB file not found, skipping Git push.");
+        return;
       }
   
-      // پیکربندی کاربری Git
+      if (!fs.existsSync(".git")) {
+        console.log("Git directory not found. Initializing Git repository...");
+        execSync("git init");
+        execSync("git branch -m main"); // rename default 'master' to 'main'
+        execSync(`git remote add origin ${GIT_REPO_URL}`);
+      }
+  
       execSync("git config user.name 'Jaberkh'");
       execSync("git config user.email 'khodadadi.jaber@live.com'");
   
-      // افزودن فایل به Git با گزینه -f
+      // Force add the file even if it's in .gitignore
       execSync("git add -f dune_data.db");
-  
-      // commit کردن تغییرات
       execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
-      
-      // ارسال به مخزن GitHub
-      execSync("git push origin master");
+      execSync("git push -u origin main");
   
-      console.log("Git push done.");
+      console.log("✅ Git push done.");
     } catch (err) {
-      console.error("Git push error:", err);
+      console.error("❌ Git push error:", err);
     }
   }
+  
 
 (async () => {
   try {
