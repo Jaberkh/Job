@@ -87,7 +87,14 @@ function pushToGitHub() {
     try {
       execSync('git status', { stdio: 'ignore' });
     } catch (err) {
-      throw new Error('Not in a Git directory or Git is not initialized');
+      // اگر مخزن Git وجود ندارد، دستور git init را اجرا کنید
+      console.log('Git directory not found. Initializing Git repository...');
+      execSync('git init');
+    }
+
+    // بررسی اینکه آیا فایل .git در دایرکتوری وجود دارد
+    if (!fs.existsSync(path.join(gitRepoDir, '.git'))) {
+      throw new Error('Git is not initialized in this directory.');
     }
 
     // پیکربندی اطلاعات کاربری Git
