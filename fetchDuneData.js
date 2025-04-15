@@ -75,38 +75,41 @@ async function fetchAndSaveData() {
 }
 
 function pushToGitHub() {
-  try {
-    if (!fs.existsSync(DB_FILE)) return;
-
-    // دایرکتوری مخزن Git
-    const gitRepoDir = path.resolve('.'); // فرض می‌کنیم در دایرکتوری مخزن هستیم
-    process.chdir(gitRepoDir);
-
-    // بررسی وضعیت Git
     try {
-      execSync('git status', { stdio: 'ignore' });
+      // بررسی اینکه فایل DB وجود دارد
+      if (!fs.existsSync(DB_FILE)) return;
+  
+      // دایرکتوری مخزن Git
+      const gitRepoDir = path.resolve('.'); // فرض می‌کنیم در دایرکتوری مخزن هستیم
+      process.chdir(gitRepoDir);
+  
+      // بررسی وضعیت Git
+      try {
+        execSync('git status', { stdio: 'ignore' });
+      } catch (err) {
+        // اگر Git در دایرکتوری نیست، آن را اینیشیالایز می‌کنیم
+        console.log('Git directory not found. Initializing Git repository...');
+        execSync('git init');
+      }
+  
+      // پیکربندی کاربری Git
+      execSync("git config user.name 'Jaberkh'");
+      execSync("git config user.email 'khodadadi.jaber@live.com'");
+  
+      // افزودن فایل به Git با گزینه -f
+      execSync("git add -f dune_data.db");
+  
+      // commit کردن تغییرات
+      execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
+      
+      // ارسال به مخزن GitHub
+      execSync("git push origin main");
+  
+      console.log("Git push done.");
     } catch (err) {
-      // اگر Git در دایرکتوری نیست، آن را اینیشیالایز می‌کنیم
-      console.log('Git directory not found. Initializing Git repository...');
-      execSync('git init');
+      console.error("Git push error:", err);
     }
-
-    // پیکربندی کاربری Git
-    execSync("git config user.name 'railway-bot'");
-    execSync("git config user.email 'railway@users.noreply.github.com'");
-
-    // افزودن فایل به Git با گزینه -f
-    execSync("git add -f dune_data.db");
-
-    // commit کردن تغییرات و push به GitHub
-    execSync(`git commit -m 'daily update: ${new Date().toISOString()}' || true`);
-    execSync("git push");
-
-    console.log("Git push done.");
-  } catch (err) {
-    console.error("Git push error:", err);
   }
-}
 
 (async () => {
   try {
