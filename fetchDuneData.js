@@ -1,16 +1,18 @@
-// index.js - Railway-ready with async sqlite
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import Database from '@jlongster/sqlite';
 import fetch from 'node-fetch';
 import { execSync } from 'child_process';
 import fs from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const DB_FILE = 'dune_data.db';
+const DUNE_API_KEY = process.env.DUNE_API_KEY;
 
 async function fetchAndSaveData() {
-  const db = await open({ filename: DB_FILE, driver: sqlite3.Database });
+  const db = new Database(DB_FILE);
 
-  await db.exec(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS peanut_data (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       all_time_peanut_count INTEGER,
@@ -25,14 +27,14 @@ async function fetchAndSaveData() {
   `);
 
   try {
-    const response = await fetch("https://api.dune.com/api/v1/query/4837362/results?api_key=xTfUgOKOpG958K3MYFJ3ku9eGuP7wSVQ");
+    const response = await fetch(`https://api.dune.com/api/v1/query/4837362/results?api_key=${DUNE_API_KEY}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const jsonData = await response.json();
     const rows = jsonData.result?.rows || [];
     if (rows.length === 0) return console.log("No data found.");
 
-    const stmt = await db.prepare(`
+    const stmt = db.prepare(`
       INSERT INTO peanut_data (
         all_time_peanut_count,
         daily_peanut_count,
@@ -44,25 +46,27 @@ async function fetchAndSaveData() {
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    for (const row of rows) {
-      await stmt.run(
-        row.all_time_peanut_count ?? null,
-        row.daily_peanut_count ?? null,
-        row.fid ?? null,
-        row.parent_fid ?? null,
-        row.rank ?? null,
-        row.sent_peanut_count ?? null,
-        row.total_peanut_count ?? null
-      );
-    }
+    const insert = db.transaction((rows) => {
+      for (const row of rows) {
+        stmt.run([
+          row.all_time_peanut_count ?? null,
+          row.daily_peanut_count ?? null,
+          row.fid ?? null,
+          row.parent_fid ?? null,
+          row.rank ?? null,
+          row.sent_peanut_count ?? null,
+          row.total_peanut_count ?? null
+        ]);
+      }
+    });
 
-    await stmt.finalize();
+    insert(rows);
     console.log(`Inserted ${rows.length} rows.`);
   } catch (err) {
     console.error("Fetch/save error:", err);
   }
 
-  await db.close();
+  db.close();
 }
 
 function pushToGitHub() {

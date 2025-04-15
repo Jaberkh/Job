@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",
+    "dotenv": "^16.5.0",
     "node-fetch": "^3.3.2",
-    "sqlite": "^4.1.2",
-    "sqlite3": "^5.1.6"
+    "sql.js": "^1.13.0"
   }
 }
