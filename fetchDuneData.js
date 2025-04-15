@@ -93,12 +93,12 @@ function pushToGitHub() {
             execSync("git init");
             execSync("git branch -m main");  // تغییر نام branch به main
             execSync(`git remote add origin ${GIT_REPO_URL}`);  // اضافه کردن remote
-        } else {
-            console.log("Git directory found. Syncing with remote...");
-            // همگام‌سازی با ریموت
-            execSync("git fetch origin main");
-            execSync("git pull origin main --rebase");  // همگام‌سازی و جلوگیری از ایجاد تاریخچه پیچیده
         }
+
+        // همگام‌سازی تغییرات ریموت
+        console.log("Syncing with remote repository...");
+        execSync("git fetch origin main");
+        execSync("git pull origin main --rebase");  // همگام‌سازی با ریموت و جلوگیری از ایجاد تاریخچه پیچیده
 
         // تنظیمات گیت
         execSync("git config user.name 'Jaberkh'");
@@ -117,8 +117,7 @@ function pushToGitHub() {
     } catch (err) {
         console.error("❌ Git push error:", err);
     }
-}
-  
+} 
   
 
 (async () => {
