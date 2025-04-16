@@ -28,7 +28,6 @@ function createTableIfNotExists(db) {
 
 async function fetchAndSaveData() {
   const db = new Database(DB_FILE);
-
   createTableIfNotExists(db);
 
   try {
@@ -75,49 +74,39 @@ async function fetchAndSaveData() {
 }
 
 function pushToGitHub() {
-    const GIT_USER = 'Jaberkh';
-    const GIT_REPO = 'Job';
-    const GH_TOKEN = process.env.GH_TOKEN;
-    const GIT_REPO_URL = `https://${GIT_USER}:${GH_TOKEN}@github.com/${GIT_USER}/${GIT_REPO}.git`;
+  const GIT_USER = 'Jaberkh';
+  const GIT_REPO = 'Job';
+  const GH_TOKEN = process.env.GH_TOKEN;
+  const GIT_REPO_URL = `https://${GIT_USER}:${GH_TOKEN}@github.com/${GIT_USER}/${GIT_REPO}.git`;
 
-    try {
-        if (!fs.existsSync(DB_FILE)) {
-            console.log("DB file not found, skipping Git push.");
-            return;
-        }
-
-        if (!fs.existsSync(".git")) {
-            console.log("Git directory not found. Initializing Git repository...");
-            execSync("git init");
-            execSync("git branch -m main");  // تغییر نام به main
-            execSync(`git remote add origin ${GIT_REPO_URL}`);
-        }
-
-        // حذف همه فایل‌ها از staging area به جز dune_data.db
-        execSync('git reset');  // این دستور همه تغییرات staging شده را باز می‌گرداند (لغو می‌کند)
-        execSync('git rm --cached .');  // این دستور همه فایل‌ها را از staging حذف می‌کند، اما در سیستم فایل باقی می‌مانند
-
-        // فقط فایل dune_data.db را به staging اضافه کنید
-        execSync('git add -f dune_data.db');  // فقط فایل dune_data.db را اضافه کنید
-
-        // کامیت تغییرات مربوط به dune_data.db
-        console.log("Committing dune_data.db...");
-        execSync("git commit -m 'update dune_data.db'");
-
-        // همگام‌سازی با ریموت و پوش کردن تغییرات
-        console.log("Syncing with remote repository...");
-        execSync("git fetch origin");
-        execSync("git checkout main");  // سوئیچ به شاخه اصلی
-        execSync("git pull origin main --rebase");  // همگام‌سازی با ریموت
-
-        execSync("git push origin main");  // پوش تغییرات به ریموت
-
-        console.log("✅ Git push done.");
-    } catch (err) {
-        console.error("❌ Git push error:", err);
+  try {
+    if (!fs.existsSync(DB_FILE)) {
+      console.log("DB file not found, skipping Git push.");
+      return;
     }
-}
 
+    if (!fs.existsSync(".git")) {
+      console.log("Git directory not found. Initializing Git repository...");
+      execSync("git init");
+      execSync("git branch -m main");
+      execSync(`git remote add origin ${GIT_REPO_URL}`);
+    }
+
+    // Stage and commit only dune_data.db
+    execSync("git add -f dune_data.db");
+    execSync("git commit -m 'update dune_data.db'");
+
+    console.log("Syncing with remote repository...");
+    execSync("git fetch origin");
+    execSync("git branch --show-current || git checkout -b main");
+    execSync("git pull origin main --rebase");
+
+    execSync("git push origin main");
+    console.log("✅ Git push done.");
+  } catch (err) {
+    console.error("❌ Git push error:", err);
+  }
+}
 
 (async () => {
   try {
