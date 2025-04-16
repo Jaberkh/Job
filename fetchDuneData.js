@@ -74,7 +74,7 @@ async function fetchAndSaveData() {
 }
 
 function pushToGitHub() {
-  const GIT_USER = 'Jaberkh';
+  const GIT_USER = 'jaberkh';
   const GIT_REPO = 'Job';
   const GH_TOKEN = process.env.GH_TOKEN;
   const GIT_REPO_URL = `https://${GIT_USER}:${GH_TOKEN}@github.com/${GIT_USER}/${GIT_REPO}.git`;
@@ -92,17 +92,19 @@ function pushToGitHub() {
           execSync(`git remote add origin ${GIT_REPO_URL}`);
       }
 
-      // افزودن فایل به staging
+      // کانفیگ اطلاعات کاربر گیت برای این ریپو
+      execSync('git config user.name "jaberkh"');
+      execSync('git config user.email "khodadadi.jaber@live.com"');
+
+      // افزودن فایل و چک تغییرات
       execSync("git add -f dune_data.db");
 
-      // بررسی اینکه چیزی برای کامیت وجود داره یا نه
       const status = execSync("git status --porcelain").toString().trim();
       if (status === "") {
           console.log("No changes to commit.");
           return;
       }
 
-      // Commit و Push
       console.log("Committing dune_data.db...");
       execSync("git commit -m 'update dune_data.db'");
       console.log("Pushing to GitHub...");
@@ -113,6 +115,7 @@ function pushToGitHub() {
       console.error("❌ Git push error:", err);
   }
 }
+
 
 
 (async () => {
